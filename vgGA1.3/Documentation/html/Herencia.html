@@ -1,0 +1,311 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN">
+<html xmlns:mwsh="http://www.mathworks.com/namespace/mcode/v1/syntaxhighlight.dtd">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   
+      <!--
+This HTML is auto-generated from an M-file.
+To make changes, update the M-file and republish this document.
+      -->
+      <title>Herencia</title>
+      <meta name="generator" content="MATLAB 7.3">
+      <meta name="date" content="2008-08-08">
+      <meta name="m-file" content="Herencia"><style>
+
+body {
+  background-color: white;
+  margin:10px;
+}
+
+h1 {
+  color: #990000; 
+  font-size: x-large;
+}
+
+h2 {
+  color: #990000;
+  font-size: medium;
+}
+
+/* Make the text shrink to fit narrow windows, but not stretch too far in 
+wide windows. */ 
+p,h1,h2,div.content div {
+  max-width: 600px;
+  /* Hack for IE6 */
+  width: auto !important; width: 600px;
+}
+
+pre.codeinput {
+  background: #EEEEEE;
+  padding: 10px;
+}
+@media print {
+  pre.codeinput {word-wrap:break-word; width:100%;}
+} 
+
+span.keyword {color: #0000FF}
+span.comment {color: #228B22}
+span.string {color: #A020F0}
+span.untermstring {color: #B20000}
+span.syscmd {color: #B28C00}
+
+pre.codeoutput {
+  color: #666666;
+  padding: 10px;
+}
+
+pre.error {
+  color: red;
+}
+
+p.footer {
+  text-align: right;
+  font-size: xx-small;
+  font-weight: lighter;
+  font-style: italic;
+  color: gray;
+}
+
+  </style></head>
+   <body>
+      <div class="content">
+         <h2>Contents</h2>
+         <div>
+            <ul>
+               <li><a href="#1">Herencia</a></li>
+               <li><a href="#2">Un AG Simple sobre onemax</a></li>
+               <li><a href="#3">Un AG con herencia sobre onemax</a></li>
+            </ul>
+         </div>
+         <h2>Herencia<a name="1"></a></h2>
+         <p>Este script muestra la forma de utilizar herencia junto con inyecciones para disminuir el n&uacute;mero de evaluaciones de la funci&oacute;n
+            objetivo.
+         </p>
+         <p>Vamos a optimizar la funci&oacute;n <tt>onemax</tt>; &eacute;sta es una funci&oacute;n cuya evaluaci&oacute;n es el n&uacute;mero de unos que tiene el cromosoma.  Tiene una apariencia dif&iacute;cil, pero es
+            realmente sencilla para un AG porque tiene una estructura que puede explotar. &Eacute;sta es una gr&aacute;fica de <tt>onemax</tt> para cromosomas de longitud N.
+         </p><pre class="codeinput">N = 6;
+t = 0:1:2^N-1;
+clear <span class="string">f</span>;
+<span class="keyword">for</span> i=1:length(t), f(i)=onemax(t(i)); <span class="keyword">end</span>
+plot(t,f,<span class="string">'.-'</span>,t,f,<span class="string">'or'</span>,<span class="string">'MarkerFaceColor'</span>,<span class="string">'r'</span>,<span class="string">'MarkerSize'</span>,4)
+axis([-0.1 2^N -1 N+0.1])
+set(gca,<span class="string">'XTick'</span>,0:2^(N-3):2^N)
+title(sprintf(<span class="string">'funci&oacute;n uno-max para N=%d'</span>,N))
+xlabel(<span class="string">'x'</span>)
+ylabel(<span class="string">'f(x)'</span>)
+</pre><img vspace="5" hspace="5" src="Herencia_01.png"> <h2>Un AG Simple sobre onemax<a name="2"></a></h2>
+         <p>Optimizamos la funci&oacute;n <tt>onemax</tt> con un algoritmo gen&eacute;tico de cromosomas binarios de 30 bits, <tt>pm</tt>=0.0 y <tt>pc</tt>=0.7.  Utilizamos un AG simple con selecci&oacute;n de torneo de tama&ntilde;o 2 y lo corremos por 100 generaciones.  La poblaci&oacute;n converge
+            al &oacute;ptimo.
+         </p><pre class="codeinput">N = 50;
+<span class="comment">%rand('state',3);   %1,3,5 producen resultados agradables</span>
+fcn = @onemax;
+n = 50;
+generaciones = 100;
+p = population(<span class="string">'integer'</span>,N,0.0,0.7);
+p = random(p,n);
+p0 = p;
+p = evaluate(p,fcn);
+best = get(p,<span class="string">'best'</span>);
+evals = get(p,<span class="string">'evals'</span>);
+B = [best.evals evals best.fitness/sum(N)];
+
+<span class="keyword">for</span> i=1:generaciones
+   p = tournament(p);
+   p = crossover(p);
+   p = mutation(p);
+   p = evaluate(p,fcn);
+   best = get(p,<span class="string">'best'</span>);
+   evals = get(p,<span class="string">'evals'</span>);
+   B = [B;best.evals evals best.fitness/sum(N)];
+   plot(B(:,2),B(:,3),<span class="string">'.-'</span>,B(:,1),B(:,3),<span class="string">'ro'</span>)
+   axis([0 evals 0 1.1])
+   title(<span class="string">'AG sin herencia y con selecci&oacute;n de torneo'</span>)
+   xlabel(<span class="string">'Evaluaciones de la funci&oacute;n objetivo'</span>)
+   ylabel(<span class="string">'proporci&oacute;n de unos en el cromosoma'</span>)
+   d = convergence(p,<span class="string">'p'</span>);
+   str0 = sprintf(<span class="string">'d = %f'</span>,d);
+   str1 = sprintf(<span class="string">'generaci&oacute;n = %d'</span>,i);
+   str2 = sprintf(<span class="string">'fmax/n = %f'</span>,best.fitness/n);
+   text(evals*0.70,0.4,str0)
+   text(evals*0.70,0.3,str1)
+   text(evals*0.70,0.2,str2)
+   str3 = sprintf(<span class="string">'evals = %d'</span>,evals);
+   text(evals*0.70,0.1,str3)
+   pause(0.01)
+<span class="keyword">end</span>
+totalEvals = get(p,<span class="string">'evals'</span>);
+</pre><img vspace="5" hspace="5" src="Herencia_02.png"> <h2>Un AG con herencia sobre onemax<a name="3"></a></h2>
+         <p>Ahora utlizamos un algoritmo gen&eacute;tico con herencia e inyecciones</p><pre class="codeinput">fcn = @onemax;
+p = p0;                 <span class="comment">% Se usa la misma poblaci&oacute;n inicial</span>
+p = startInheritance(p);
+p = evaluate(p,fcn);    <span class="comment">% Se eval&uacute;a la primera generaci&oacute;n</span>
+best = get(p,<span class="string">'best'</span>);
+evals = get(p,<span class="string">'evals'</span>);
+C = [best.evals evals best.fitness/sum(N)];
+Iny = [best.evals best.fitness/sum(N)];
+
+<span class="keyword">while</span> 1
+   <span class="keyword">if</span> d &lt; 0.01
+      <span class="comment">% realizar inyecci&oacute;n si se tiene diversidad menor a 0.01</span>
+      p = injection(p,0.1,fcn);
+      best = get(p,<span class="string">'best'</span>);
+      Iny = [Iny;best.evals best.fitness/sum(N)];
+   <span class="keyword">end</span>
+   p = tournament(p);
+   p = crossInheritance(p);
+   p = mutation(p);
+   p = evaluateInheritance(p,fcn);
+   best = get(p,<span class="string">'best'</span>);
+   evals = get(p,<span class="string">'evals'</span>);
+   C = [C;best.evals evals best.fitness/sum(N)];
+   plot(B(:,2),B(:,3),<span class="string">'.-'</span>,B(:,1),B(:,3),<span class="string">'ro'</span>,<span class="keyword">...</span>
+      C(:,2),C(:,3),<span class="string">'k-'</span>,C(:,1),C(:,3),<span class="string">'gs'</span>)
+   axis([0 totalEvals 0 1.1])
+   title(<span class="string">'AG con herencia'</span>)
+   xlabel(<span class="string">'Evaluaciones de la funci&oacute;n objetivo'</span>)
+   ylabel(<span class="string">'proporci&oacute;n de unos en el cromosoma'</span>)
+   d = convergence(p,<span class="string">'p'</span>);
+   str1 = sprintf(<span class="string">'d = %f'</span>,d);
+   text(totalEvals*0.70,0.3,str1)
+   str2 = sprintf(<span class="string">'fmax/n = %f'</span>,best.fitness/n);
+   text(totalEvals*0.70,0.2,str2)
+   str3 = sprintf(<span class="string">'evals = %d'</span>,evals);
+   text(totalEvals*0.70,0.1,str3)
+   <span class="keyword">if</span> length(Iny)&gt;1
+      hold <span class="string">on</span>
+      <span class="comment">%plot(Iny(:,1),Iny(:,2),'r.')</span>
+      stem(Iny(:,1),Iny(:,2),<span class="string">'r.--'</span>)
+      hold <span class="string">off</span>
+   <span class="keyword">end</span>
+   pause(0.01)
+   <span class="keyword">if</span> get(p,<span class="string">'evals'</span>)&gt;=totalEvals
+      <span class="keyword">break</span>
+   <span class="keyword">end</span>
+<span class="keyword">end</span>
+</pre><img vspace="5" hspace="5" src="Herencia_03.png"> <p class="footer"><br>
+            Published with MATLAB&reg; 7.3<br></p>
+      </div>
+      <!--
+##### SOURCE BEGIN #####
+%% Herencia
+% Este script muestra la forma de utilizar herencia junto con inyecciones para 
+% disminuir el número de evaluaciones de la función objetivo.
+%
+% Vamos a optimizar la función |onemax|; ésta es una función cuya
+% evaluación es el número de unos que tiene el cromosoma.  Tiene una
+% apariencia difícil, pero es realmente sencilla para un AG porque tiene 
+% una estructura que puede explotar. Ésta es una gráfica de |onemax| para 
+% cromosomas de longitud N.
+N = 6;
+t = 0:1:2^N-1;
+clear f;
+for i=1:length(t), f(i)=onemax(t(i)); end
+plot(t,f,'.-',t,f,'or','MarkerFaceColor','r','MarkerSize',4)
+axis([-0.1 2^N -1 N+0.1])
+set(gca,'XTick',0:2^(N-3):2^N)
+title(sprintf('función uno-max para N=%d',N))
+xlabel('x')
+ylabel('f(x)')
+%% Un AG Simple sobre onemax
+% Optimizamos la función |onemax| con un algoritmo genético de cromosomas 
+% binarios de 30 bits, |pm|=0.0 y |pc|=0.7.  Utilizamos un AG simple con
+% selección de torneo de tamaño 2 y lo corremos por 100 generaciones.  La
+% población converge al óptimo.
+
+N = 50;
+%rand('state',3);   %1,3,5 producen resultados agradables
+fcn = @onemax;
+n = 50;
+generaciones = 100;
+p = population('integer',N,0.0,0.7);
+p = random(p,n);
+p0 = p;
+p = evaluate(p,fcn);
+best = get(p,'best');
+evals = get(p,'evals');
+B = [best.evals evals best.fitness/sum(N)];
+
+for i=1:generaciones
+   p = tournament(p);
+   p = crossover(p);
+   p = mutation(p);
+   p = evaluate(p,fcn);
+   best = get(p,'best');
+   evals = get(p,'evals');
+   B = [B;best.evals evals best.fitness/sum(N)];
+   plot(B(:,2),B(:,3),'.-',B(:,1),B(:,3),'ro')
+   axis([0 evals 0 1.1])
+   title('AG sin herencia y con selección de torneo')
+   xlabel('Evaluaciones de la función objetivo')
+   ylabel('proporción de unos en el cromosoma')
+   d = convergence(p,'p');
+   str0 = sprintf('d = %f',d);
+   str1 = sprintf('generación = %d',i);
+   str2 = sprintf('fmax/n = %f',best.fitness/n);
+   text(evals*0.70,0.4,str0)
+   text(evals*0.70,0.3,str1)
+   text(evals*0.70,0.2,str2)
+   str3 = sprintf('evals = %d',evals);
+   text(evals*0.70,0.1,str3)
+   pause(0.01)
+end
+totalEvals = get(p,'evals');
+
+%% Un AG con herencia sobre onemax
+% Ahora utlizamos un algoritmo genético con herencia e inyecciones
+
+fcn = @onemax;
+p = p0;                 % Se usa la misma población inicial
+p = startInheritance(p);
+p = evaluate(p,fcn);    % Se evalúa la primera generación
+best = get(p,'best');
+evals = get(p,'evals');
+C = [best.evals evals best.fitness/sum(N)];
+Iny = [best.evals best.fitness/sum(N)];
+
+while 1
+   if d < 0.01
+      % realizar inyección si se tiene diversidad menor a 0.01
+      p = injection(p,0.1,fcn);
+      best = get(p,'best');
+      Iny = [Iny;best.evals best.fitness/sum(N)];
+   end
+   p = tournament(p);
+   p = crossInheritance(p);
+   p = mutation(p);
+   p = evaluateInheritance(p,fcn);
+   best = get(p,'best');
+   evals = get(p,'evals');
+   C = [C;best.evals evals best.fitness/sum(N)];
+   plot(B(:,2),B(:,3),'.-',B(:,1),B(:,3),'ro',...
+      C(:,2),C(:,3),'k-',C(:,1),C(:,3),'gs')
+   axis([0 totalEvals 0 1.1])
+   title('AG con herencia')
+   xlabel('Evaluaciones de la función objetivo')
+   ylabel('proporción de unos en el cromosoma')
+   d = convergence(p,'p');
+   str1 = sprintf('d = %f',d);
+   text(totalEvals*0.70,0.3,str1)
+   str2 = sprintf('fmax/n = %f',best.fitness/n);
+   text(totalEvals*0.70,0.2,str2)
+   str3 = sprintf('evals = %d',evals);
+   text(totalEvals*0.70,0.1,str3)   
+   if length(Iny)>1
+      hold on
+      %plot(Iny(:,1),Iny(:,2),'r.')
+      stem(Iny(:,1),Iny(:,2),'r.REPLACE_WITH_DASH_DASH')
+      hold off
+   end
+   pause(0.01)
+   if get(p,'evals')>=totalEvals
+      break
+   end
+end
+
+
+##### SOURCE END #####
+-->
+   </body>
+</html>

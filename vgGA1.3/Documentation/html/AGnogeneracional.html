@@ -1,0 +1,292 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN">
+<html xmlns:mwsh="http://www.mathworks.com/namespace/mcode/v1/syntaxhighlight.dtd">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   
+      <!--
+This HTML is auto-generated from an M-file.
+To make changes, update the M-file and republish this document.
+      -->
+      <title>Algoritmo gen&eacute;tico de estado estable</title>
+      <meta name="generator" content="MATLAB 7.3">
+      <meta name="date" content="2008-08-08">
+      <meta name="m-file" content="AGnogeneracional"><style>
+
+body {
+  background-color: white;
+  margin:10px;
+}
+
+h1 {
+  color: #990000; 
+  font-size: x-large;
+}
+
+h2 {
+  color: #990000;
+  font-size: medium;
+}
+
+/* Make the text shrink to fit narrow windows, but not stretch too far in 
+wide windows. */ 
+p,h1,h2,div.content div {
+  max-width: 600px;
+  /* Hack for IE6 */
+  width: auto !important; width: 600px;
+}
+
+pre.codeinput {
+  background: #EEEEEE;
+  padding: 10px;
+}
+@media print {
+  pre.codeinput {word-wrap:break-word; width:100%;}
+} 
+
+span.keyword {color: #0000FF}
+span.comment {color: #228B22}
+span.string {color: #A020F0}
+span.untermstring {color: #B20000}
+span.syscmd {color: #B28C00}
+
+pre.codeoutput {
+  color: #666666;
+  padding: 10px;
+}
+
+pre.error {
+  color: red;
+}
+
+p.footer {
+  text-align: right;
+  font-size: xx-small;
+  font-weight: lighter;
+  font-style: italic;
+  color: gray;
+}
+
+  </style></head>
+   <body>
+      <div class="content">
+         <h1>Algoritmo gen&eacute;tico de estado estable</h1>
+         <introduction>
+            <p>En este script se implementa un algoritmo gen&eacute;tico no generacional, de estado estable, y se compara su desempe&ntilde;o con un algoritmo
+               gen&eacute;tico tradicional sobre la funci&oacute;n <tt>onemax</tt>.
+            </p>
+         </introduction>
+         <h2>Contents</h2>
+         <div>
+            <ul>
+               <li><a href="#1">AG generacional</a></li>
+               <li><a href="#2">AG de estado estable</a></li>
+               <li><a href="#3">Comparaci&oacute;n frente a frente</a></li>
+            </ul>
+         </div>
+         <h2>AG generacional<a name="1"></a></h2><pre class="codeinput">N = 10;
+n = 6;
+generaciones = 20;
+p = population(<span class="string">'integer'</span>,N,0.2,0.7);
+p = random(p,n);
+p = evaluate(p,@onemax);
+best = get(p,<span class="string">'best'</span>);
+B = [0 best.fitness];
+<span class="keyword">for</span> i=1:generaciones
+   p = tournament(p);
+   p = crossover(p);
+   p = mutation(p);
+   p = evaluate(p,@onemax);
+   best = get(p,<span class="string">'best'</span>);
+   evalsAG = get(p,<span class="string">'evals'</span>);
+   B = [B;evalsAG best.fitness];
+   plot(B(:,1),B(:,2),<span class="string">'.-'</span>)
+   axis([0 evalsAG 0 N+1])
+   xlabel(<span class="string">'Evaluaciones de la funci&oacute;n objetivo'</span>)
+   ylabel(<span class="string">'Mejor encontrado'</span>)
+   pause(0.01)
+<span class="keyword">end</span>
+totalEvals = get(p,<span class="string">'evals'</span>);
+</pre><img vspace="5" hspace="5" src="AGnogeneracional_01.png"> <h2>AG de estado estable<a name="2"></a></h2><pre class="codeinput">p = population(<span class="string">'integer'</span>,N,0.2,0.7);
+p = random(p,n);
+p = evaluate(p,@onemax);
+best = get(p,<span class="string">'best'</span>);
+evalsAGng = 0;
+C = [0 best.fitness];
+<span class="keyword">while</span> evalsAGng&lt;evalsAG
+   p = roulette(p,<span class="string">''</span>,1);
+   p = crossover(p,1);
+   p = mutation(p,1);
+   p = evaluateLast(p,@onemax);
+   p = eraseWeak(p);
+   best = get(p,<span class="string">'best'</span>);
+   evalsAGng = get(p,<span class="string">'evals'</span>);
+   C = [C;evalsAGng best.fitness];
+   plot(C(:,1),C(:,2),<span class="string">'.-'</span>)
+   axis([0 evalsAGng 0 N+1])
+   xlabel(<span class="string">'Evaluaciones de la funci&oacute;n objetivo'</span>)
+   ylabel(<span class="string">'Mejor encontrado'</span>)
+   pause(0.01)
+<span class="keyword">end</span>
+</pre><img vspace="5" hspace="5" src="AGnogeneracional_02.png"> <h2>Comparaci&oacute;n frente a frente<a name="3"></a></h2><pre class="codeinput">N = 50;
+n = 80;
+generaciones = 30;
+p = population(<span class="string">'integer'</span>,N,0.2,0.7);
+p = random(p,n);
+p1 = p;
+p2 = p;
+
+p1 = evaluate(p1,@onemax);
+best1 = get(p1,<span class="string">'best'</span>);
+B = [0 best1.fitness];
+
+p2 = evaluate(p2,@onemax);
+best2 = get(p2,<span class="string">'best'</span>);
+C = [0 best2.fitness];
+
+<span class="keyword">for</span> i=1:generaciones
+   p1 = tournament(p1,4);
+   p1 = crossover(p1);
+   p1 = mutation(p1);
+   p1 = evaluate(p1,@onemax);
+   best1 = get(p1,<span class="string">'best'</span>);
+   evals1 = get(p1,<span class="string">'evals'</span>);
+   B = [B;evals1 best1.fitness];
+
+   <span class="keyword">while</span> 1
+      p2 = roulette(p2,<span class="string">''</span>,1);
+      p2 = crossover(p2,1);
+      p2 = mutation(p2,1);
+      p2 = evaluateLast(p2,@onemax);
+      p2 = eraseWeak(p2);
+      best2 = get(p2,<span class="string">'best'</span>);
+      evals2 = get(p2,<span class="string">'evals'</span>);
+      C = [C;evals2 best2.fitness];
+      <span class="keyword">if</span> evals2 &gt;= evals1
+         <span class="keyword">break</span>
+      <span class="keyword">end</span>
+   <span class="keyword">end</span>
+   plot(B(:,1),B(:,2),<span class="string">'.-'</span>,C(:,1),C(:,2),<span class="string">'.-r'</span>)
+   axis([0 evals1 0 N+1])
+   legend(<span class="string">'AG generacional'</span>,<span class="string">'AG de estado estable'</span>,<span class="string">'location'</span>,<span class="string">'best'</span>)
+   xlabel(<span class="string">'Evaluaciones de la funci&oacute;n objetivo'</span>)
+   ylabel(<span class="string">'Mejor encontrado'</span>)
+   title(<span class="string">'Comparaci&oacute;n AG generacional y AG de estado estable'</span>)
+   pause(0.01)
+<span class="keyword">end</span>
+</pre><img vspace="5" hspace="5" src="AGnogeneracional_03.png"> <p class="footer"><br>
+            Published with MATLAB&reg; 7.3<br></p>
+      </div>
+      <!--
+##### SOURCE BEGIN #####
+%% Algoritmo genético de estado estable
+% En este script se implementa un algoritmo genético no generacional, de
+% estado estable, y se compara su desempeño con un algoritmo genético
+% tradicional sobre la función |onemax|.
+
+
+%% AG generacional
+
+N = 10;
+n = 6;
+generaciones = 20;
+p = population('integer',N,0.2,0.7);
+p = random(p,n);
+p = evaluate(p,@onemax);
+best = get(p,'best');
+B = [0 best.fitness];
+for i=1:generaciones
+   p = tournament(p);
+   p = crossover(p);
+   p = mutation(p);
+   p = evaluate(p,@onemax);
+   best = get(p,'best');
+   evalsAG = get(p,'evals');
+   B = [B;evalsAG best.fitness];
+   plot(B(:,1),B(:,2),'.-')
+   axis([0 evalsAG 0 N+1])
+   xlabel('Evaluaciones de la función objetivo')
+   ylabel('Mejor encontrado')
+   pause(0.01)
+end
+totalEvals = get(p,'evals');
+
+%% AG de estado estable
+
+p = population('integer',N,0.2,0.7);
+p = random(p,n);
+p = evaluate(p,@onemax);
+best = get(p,'best');
+evalsAGng = 0;
+C = [0 best.fitness];
+while evalsAGng<evalsAG
+   p = roulette(p,'',1);
+   p = crossover(p,1);
+   p = mutation(p,1);
+   p = evaluateLast(p,@onemax);
+   p = eraseWeak(p);
+   best = get(p,'best');
+   evalsAGng = get(p,'evals');
+   C = [C;evalsAGng best.fitness];
+   plot(C(:,1),C(:,2),'.-')
+   axis([0 evalsAGng 0 N+1])
+   xlabel('Evaluaciones de la función objetivo')
+   ylabel('Mejor encontrado')
+   pause(0.01)
+end
+
+%% Comparación frente a frente
+
+N = 50;
+n = 80;
+generaciones = 30;
+p = population('integer',N,0.2,0.7);
+p = random(p,n);
+p1 = p;
+p2 = p;
+
+p1 = evaluate(p1,@onemax);
+best1 = get(p1,'best');
+B = [0 best1.fitness];
+
+p2 = evaluate(p2,@onemax);
+best2 = get(p2,'best');
+C = [0 best2.fitness];
+
+for i=1:generaciones
+   p1 = tournament(p1,4);
+   p1 = crossover(p1);
+   p1 = mutation(p1);
+   p1 = evaluate(p1,@onemax);
+   best1 = get(p1,'best');
+   evals1 = get(p1,'evals');
+   B = [B;evals1 best1.fitness];
+
+   while 1
+      p2 = roulette(p2,'',1);
+      p2 = crossover(p2,1);
+      p2 = mutation(p2,1);
+      p2 = evaluateLast(p2,@onemax);
+      p2 = eraseWeak(p2);
+      best2 = get(p2,'best');
+      evals2 = get(p2,'evals');
+      C = [C;evals2 best2.fitness];
+      if evals2 >= evals1
+         break
+      end
+   end
+   plot(B(:,1),B(:,2),'.-',C(:,1),C(:,2),'.-r')
+   axis([0 evals1 0 N+1])
+   legend('AG generacional','AG de estado estable','location','best')
+   xlabel('Evaluaciones de la función objetivo')
+   ylabel('Mejor encontrado')
+   title('Comparación AG generacional y AG de estado estable')
+   pause(0.01)
+end
+
+
+##### SOURCE END #####
+-->
+   </body>
+</html>

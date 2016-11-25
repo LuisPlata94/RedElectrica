@@ -1,0 +1,29 @@
+function res = gdigit(p, n, varargin)
+
+% gdigit(p, n, B=2)
+% 
+% Generalized digit of base B and value n integer p.
+% (Same as digit but calls glow and ghighh.)
+
+%************************************************************
+%*                                                          *
+%*   vgGA: The Virtual Gene Genetic Algorithm               *
+%*                                                          *
+%*   Copyright (c) All Rights Reserved                      *
+%*   Manuel Valenzuela-Rendón                               *
+%*   valenzuela@itesm.mx                                    *
+%*   http://homepages.mty.itesm.mx/valenzuela               *
+%*                                                          *
+%*   Tecnológico de Monterrey, Campus Monterrey             *
+%*   Monterrey, N.L., Mexico                                *
+%*                                                          *
+%************************************************************
+
+  if length(varargin)>=1
+    B = varargin{1};
+  else
+    B = 2;
+  end
+  
+  res = glow(ghighh(p, n./B),B);
+

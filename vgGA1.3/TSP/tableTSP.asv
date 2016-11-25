@@ -1,0 +1,37 @@
+function distancias = tableTSP(coordinates)
+
+% distancias = tablaTSP(coordinates)
+%
+% Obtiene matriz de distancias entre ciudades dadas una matriz de
+% coordenadas.
+%
+% See also: invTSP, fcnTSP, plotTSP
+
+%************************************************************
+%*                                                          *
+%*   vgGA: The Virtual Gene Genetic Algorithm               *
+%*                                                          *
+%*   Copyright (c) All Rights Reserved                      *
+%*   Manuel Valenzuela-Rendon                               *
+%*   valenzuela@itesm.mx                                    *
+%*   http://homepages.mty.itesm.mx/valenzuela               *
+%*                                                          *
+%*   Centro de Computacion Inteligente y Robotica           *
+%*   Tecnologico de Monterrey, Campus Monterrey             *
+%*   Monterrey, N.L., Mexico                                *
+%*                                                          *
+%************************************************************
+[nCities,nx] = size(coordinates);
+if nx ~= 2,
+   error('coordinates must be debe ser una matriz (nCiudades) x 2')
+end
+distance = zeros(nCities);
+for i=1:nCities
+   for j=i: nCities
+      distance(i,j) = ...
+         sqrt( (coordinates(i,1)-coordinates(j,1))^2 + ...
+         (coordinates(i,2)-coordinates(j,2))^2);
+      distance(j,i) = distance(i,j);
+   end
+end 
+

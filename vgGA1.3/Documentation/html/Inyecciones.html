@@ -1,0 +1,231 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN">
+<html xmlns:mwsh="http://www.mathworks.com/namespace/mcode/v1/syntaxhighlight.dtd">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   
+      <!--
+This HTML is auto-generated from an M-file.
+To make changes, update the M-file and republish this document.
+      -->
+      <title>Reinicializaci&oacute;n</title>
+      <meta name="generator" content="MATLAB 7.3">
+      <meta name="date" content="2007-09-04">
+      <meta name="m-file" content="Inyecciones"><style>
+
+body {
+  background-color: white;
+  margin:10px;
+}
+
+h1 {
+  color: #990000; 
+  font-size: x-large;
+}
+
+h2 {
+  color: #990000;
+  font-size: medium;
+}
+
+/* Make the text shrink to fit narrow windows, but not stretch too far in 
+wide windows. */ 
+p,h1,h2,div.content div {
+  max-width: 600px;
+  /* Hack for IE6 */
+  width: auto !important; width: 600px;
+}
+
+pre.codeinput {
+  background: #EEEEEE;
+  padding: 10px;
+}
+@media print {
+  pre.codeinput {word-wrap:break-word; width:100%;}
+} 
+
+span.keyword {color: #0000FF}
+span.comment {color: #228B22}
+span.string {color: #A020F0}
+span.untermstring {color: #B20000}
+span.syscmd {color: #B28C00}
+
+pre.codeoutput {
+  color: #666666;
+  padding: 10px;
+}
+
+pre.error {
+  color: red;
+}
+
+p.footer {
+  text-align: right;
+  font-size: xx-small;
+  font-weight: lighter;
+  font-style: italic;
+  color: gray;
+}
+
+  </style></head>
+   <body>
+      <div class="content">
+         <h1>Reinicializaci&oacute;n</h1>
+         <introduction>
+            <p>Este ejemplo muestra el uso de los m&eacute;todos <tt>convergence</tt> e <tt>injection</tt> para reinicializar un algoritmo gen&eacute;tico mediante inyecciones de diversidad.
+            </p>
+         </introduction>
+         <h2>Contents</h2>
+         <div>
+            <ul>
+               <li><a href="#1">Un AG Simple sobre debf2</a></li>
+            </ul>
+         </div>
+         <h2>Un AG Simple sobre debf2<a name="1"></a></h2>
+         <p>Optimizamos la funci&oacute;n <tt>debf2</tt> con un algoritmo gen&eacute;tico de reales con un segmento de 30 bits, <tt>pm</tt>=0.01 y <tt>pc</tt>=0.9.  Utilizamos un AG simple con selecci&oacute;n proporcional (SUS) y lo corremos por 100 generaciones.  La poblaci&oacute;n converge
+            al &oacute;ptimo.  En la segunda gr&aacute;fica se muestran con l&iacute;neas punteas los momentos en los que ocurre una inyecci&oacute;n.  Se puede notar
+            que regularmente ocurren mejor&iacute;as despu&eacute;s de una inyecci&oacute;n.
+         </p><pre class="codeinput">t = 0:0.001:1;
+rand(<span class="string">'state'</span>,1);   <span class="comment">%1,3,5 produce resultados agradables</span>
+fcn = @debf2;
+n = 4;
+p = population(<span class="string">'real'</span>,[0 1],30,0.01,0.9);
+p = random(p,n);
+generaciones = 60;
+p = evaluate(p,fcn);
+best = get(p,<span class="string">'best'</span>);
+B = [best.evals best.fitness];
+d = convergence(p);
+Iny = B;
+
+<span class="keyword">for</span> i=1:generaciones
+   <span class="keyword">if</span> d &lt; 0.0001
+      <span class="comment">% realizar inyecci&oacute;n si se tiene diversidad menor a 0.1</span>
+      p = injection(p,0.2,fcn);
+      Iny = [Iny;best.evals best.fitness];
+   <span class="keyword">end</span>
+   p = scale(p);
+   p = sus(p);
+   p = crossover(p);
+   p = mutation(p);
+   p = evaluate(p,fcn);
+   best = get(p,<span class="string">'best'</span>);
+   B = [B;best.evals best.fitness];
+   d = convergence(p);
+   subplot(2,1,1)
+   plot(t,debf2(t))
+   axis([0 1 -0.1 1.2])
+   title(<span class="string">'SUS con escalamiento y con inyecciones de diversidad'</span>)
+   xlabel(<span class="string">'x'</span>)
+   ylabel(<span class="string">'f(x)'</span>)
+   hold <span class="string">on</span>
+   subplot(2,1,1)
+   plot(p);
+   str1 = sprintf(<span class="string">'t = %d'</span>,i);
+   str2 = sprintf(<span class="string">'d = %f'</span>,d);
+   text(0.7,0.8,str1)
+   text(0.7,0.9,str2)
+   <span class="keyword">if</span> d &lt; 0.1
+      text(0.7,1.0,<span class="string">'inyecci&oacute;n'</span>)
+   <span class="keyword">end</span>
+   hold <span class="string">off</span>
+   subplot(2,1,2)
+   plot(B(:,1),B(:,2))
+   axis([0 i*n 0 1.1])
+   str3 = sprintf(<span class="string">'fmax = %f'</span>,best.fitness);
+   text(i*n*0.70,0.4,str3)
+   <span class="keyword">if</span> length(Iny)&gt;1
+      hold <span class="string">on</span>
+      subplot(2,1,2)
+      stem(Iny(:,1),Iny(:,2),<span class="string">'xr--'</span>)
+      title(<span class="string">'Mejor encontrado'</span>)
+      xlabel(<span class="string">'Evaluaciones de la funci&oacute;n objetivo'</span>)
+      ylabel(<span class="string">'Mejor evaluaci&oacute;n'</span>)
+      hold <span class="string">off</span>
+   <span class="keyword">end</span>
+   pause(0.05)
+<span class="keyword">end</span>
+</pre><img vspace="5" hspace="5" src="Inyecciones_01.png"> <p class="footer"><br>
+            Published with MATLAB&reg; 7.3<br></p>
+      </div>
+      <!--
+##### SOURCE BEGIN #####
+%% Reinicialización
+% Este ejemplo muestra el uso de los métodos |convergence| e |injection|
+% para reinicializar un algoritmo genético mediante inyecciones de
+% diversidad.
+
+%% Un AG Simple sobre debf2
+% Optimizamos la función |debf2| con un algoritmo genético de reales con
+% un segmento de 30 bits, |pm|=0.01 y |pc|=0.9.  Utilizamos un AG simple con
+% selección proporcional (SUS) y lo corremos por 100 generaciones.  La
+% población converge al óptimo.  En la segunda gráfica se muestran con
+% líneas punteas los momentos en los que ocurre una inyección.  Se puede
+% notar que regularmente ocurren mejorías después de una inyección.
+
+t = 0:0.001:1;
+rand('state',1);   %1,3,5 produce resultados agradables
+fcn = @debf2;
+n = 4;
+p = population('real',[0 1],30,0.01,0.9);
+p = random(p,n);
+generaciones = 60;
+p = evaluate(p,fcn);
+best = get(p,'best');
+B = [best.evals best.fitness];
+d = convergence(p);
+Iny = B;
+
+for i=1:generaciones
+   if d < 0.0001
+      % realizar inyección si se tiene diversidad menor a 0.1
+      p = injection(p,0.2,fcn);
+      Iny = [Iny;best.evals best.fitness];
+   end
+   p = scale(p);
+   p = sus(p); 
+   p = crossover(p);
+   p = mutation(p);
+   p = evaluate(p,fcn);
+   best = get(p,'best');
+   B = [B;best.evals best.fitness];
+   d = convergence(p);
+   subplot(2,1,1)
+   plot(t,debf2(t))
+   axis([0 1 -0.1 1.2])
+   title('SUS con escalamiento y con inyecciones de diversidad')
+   xlabel('x')
+   ylabel('f(x)')
+   hold on
+   subplot(2,1,1)
+   plot(p);
+   str1 = sprintf('t = %d',i);
+   str2 = sprintf('d = %f',d);
+   text(0.7,0.8,str1)
+   text(0.7,0.9,str2)
+   if d < 0.1
+      text(0.7,1.0,'inyección')
+   end
+   hold off
+   subplot(2,1,2)
+   plot(B(:,1),B(:,2))
+   axis([0 i*n 0 1.1])
+   str3 = sprintf('fmax = %f',best.fitness);
+   text(i*n*0.70,0.4,str3)
+   if length(Iny)>1
+      hold on
+      subplot(2,1,2)
+      stem(Iny(:,1),Iny(:,2),'xrREPLACE_WITH_DASH_DASH')
+      title('Mejor encontrado')
+      xlabel('Evaluaciones de la función objetivo')
+      ylabel('Mejor evaluación')
+      hold off
+   end
+   pause(0.05)
+end
+
+##### SOURCE END #####
+-->
+   </body>
+</html>

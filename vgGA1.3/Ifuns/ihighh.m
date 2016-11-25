@@ -1,0 +1,27 @@
+function res = ihighh(p, m, varargin)
+
+% ihighh(p, m, B=2) = \hat{H}_m(p)
+%
+% Digits of the high part of integer p above digit m of base B.
+ 
+%************************************************************
+%*                                                          *
+%*   vgGA: The Virtual Gene Genetic Algorithm               *
+%*                                                          *
+%*   Copyright (c) All Rights Reserved                      *
+%*   Manuel Valenzuela-Rendón                               *
+%*   valenzuela@itesm.mx                                    *
+%*   http://homepages.mty.itesm.mx/valenzuela               *
+%*                                                          *
+%*   Tecnológico de Monterrey, Campus Monterrey             *
+%*   Monterrey, N.L., Mexico                                *
+%*                                                          *
+%************************************************************
+  
+  if length(varargin)>=1
+    B = varargin{1};
+  else
+    B = 2;
+  end
+  
+  res = ihigh(p,m,B)./(B.^m);

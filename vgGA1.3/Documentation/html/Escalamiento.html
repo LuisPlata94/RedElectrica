@@ -1,0 +1,338 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN">
+<html xmlns:mwsh="http://www.mathworks.com/namespace/mcode/v1/syntaxhighlight.dtd">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   
+      <!--
+This HTML is auto-generated from an M-file.
+To make changes, update the M-file and republish this document.
+      -->
+      <title>Escalamiento</title>
+      <meta name="generator" content="MATLAB 7.3">
+      <meta name="date" content="2008-08-08">
+      <meta name="m-file" content="Escalamiento"><style>
+
+body {
+  background-color: white;
+  margin:10px;
+}
+
+h1 {
+  color: #990000; 
+  font-size: x-large;
+}
+
+h2 {
+  color: #990000;
+  font-size: medium;
+}
+
+/* Make the text shrink to fit narrow windows, but not stretch too far in 
+wide windows. */ 
+p,h1,h2,div.content div {
+  max-width: 600px;
+  /* Hack for IE6 */
+  width: auto !important; width: 600px;
+}
+
+pre.codeinput {
+  background: #EEEEEE;
+  padding: 10px;
+}
+@media print {
+  pre.codeinput {word-wrap:break-word; width:100%;}
+} 
+
+span.keyword {color: #0000FF}
+span.comment {color: #228B22}
+span.string {color: #A020F0}
+span.untermstring {color: #B20000}
+span.syscmd {color: #B28C00}
+
+pre.codeoutput {
+  color: #666666;
+  padding: 10px;
+}
+
+pre.error {
+  color: red;
+}
+
+p.footer {
+  text-align: right;
+  font-size: xx-small;
+  font-weight: lighter;
+  font-style: italic;
+  color: gray;
+}
+
+  </style></head>
+   <body>
+      <div class="content">
+         <h1>Escalamiento</h1>
+         <introduction>
+            <p>En este tutorial se hace una breve demostraci&oacute;n de la necesidad de escalamiento.</p>
+         </introduction>
+         <h2>Contents</h2>
+         <div>
+            <ul>
+               <li><a href="#1">debf2: funci&oacute;n 2 de Deb</a></li>
+               <li><a href="#2">Un AG Simple sobre debf2</a></li>
+               <li><a href="#3">debf2T: la funci&oacute;n 2 de Deb trasladada</a></li>
+               <li><a href="#4">Un AG Simple sobre debf2T</a></li>
+               <li><a href="#5">Un AG con selecci&oacute;n proporcional y escalamiento</a></li>
+               <li><a href="#6">Un AG con selecci&oacute;n de torneo</a></li>
+            </ul>
+         </div>
+         <h2>debf2: funci&oacute;n 2 de Deb<a name="1"></a></h2>
+         <p>Como funci&oacute;n objetivo, vamos a usar la funci&oacute;n 2 de Deb. A continuaci&oacute;n obtenemos su gr&aacute;fica.  El &oacute;ptimo se encuentra en x=0.1.</p><pre class="codeinput">t = 0:0.001:1;
+plot(t,debf2(t))
+axis([0 1 -0.1 1.1])
+xlabel(<span class="string">'x'</span>)
+ylabel(<span class="string">'f(x)'</span>)
+title(<span class="string">'debf2'</span>)
+</pre><img vspace="5" hspace="5" src="Escalamiento_01.png"> <h2>Un AG Simple sobre debf2<a name="2"></a></h2>
+         <p>Optimizamos la funci&oacute;n <tt>debf2</tt> con un algoritmo gen&eacute;tico de reales con un segmento de 30 bits, <tt>pm</tt>=0.01 y <tt>pc</tt>=0.9.  Utilizamos un AG simple con selecci&oacute;n proporcional (SUS) y lo corremos por 100 generaciones.  La poblaci&oacute;n converge
+            al &oacute;ptimo.
+         </p><pre class="codeinput">p = population(<span class="string">'real'</span>,[0 1],30,0.01,0.9);
+p = random(p,100);
+generaciones = 100;
+p = evaluate(p,@debf2);
+<span class="keyword">for</span> i=1:generaciones
+   p = sus(p);
+   p = crossover(p);
+   p = mutation(p);
+   p = evaluate(p,@debf2);
+   plot(t,debf2(t))
+   xlabel(<span class="string">'x'</span>)
+   ylabel(<span class="string">'f(x)'</span>)
+   axis([0 1 -0.1 1.1])
+   title(<span class="string">'SUS sin escalamiento'</span>)
+   hold <span class="string">on</span>
+   plot(p);
+   str = sprintf(<span class="string">'t = %d'</span>,i);
+   text(0.7,0.8,str)
+   hold <span class="string">off</span>
+   pause(0.1)
+<span class="keyword">end</span>
+</pre><img vspace="5" hspace="5" src="Escalamiento_02.png"> <h2>debf2T: la funci&oacute;n 2 de Deb trasladada<a name="3"></a></h2>
+         <p>Como una segunda funci&oacute;n objetivo, trasladamos la funci&oacute;n <tt>debf2</tt> por 20 en el eje y. A continuaci&oacute;n obtenemos su gr&aacute;fica. El &oacute;ptimo se encuentra en x=0.1.
+         </p><pre class="codeinput">debf2T = @(x) debf2(x) + 20;
+t = 0:0.001:1;
+plot(t,debf2T(t))
+axis([0 1 19.9 21.1])
+xlabel(<span class="string">'x'</span>)
+ylabel(<span class="string">'f(x)'</span>)
+title(<span class="string">'debf2+20'</span>)
+</pre><img vspace="5" hspace="5" src="Escalamiento_03.png"> <h2>Un AG Simple sobre debf2T<a name="4"></a></h2>
+         <p>Optimizamos la funci&oacute;n <tt>debf2T</tt> con un algoritmo gen&eacute;tico de reales con un segmento de 30 bits, <tt>pm</tt>=0.01 y <tt>pc</tt>=0.9.  Utilizamos un AG simple con selecci&oacute;n proporcional (SUS) y lo corremos por 100 generaciones.  La poblaci&oacute;n converge
+            al &oacute;ptimo. Ahora la poblaci&oacute;n no converge al &oacute;ptimo.
+         </p><pre class="codeinput">p = population(<span class="string">'real'</span>,[0 1],30,0.01,0.9);
+p = random(p,100);
+generaciones = 50;
+p = evaluate(p,debf2T);
+<span class="keyword">for</span> i=1:generaciones
+   p = sus(p);
+   p = crossover(p);
+   p = mutation(p);
+   p = evaluate(p,debf2T);
+   plot(t,debf2T(t))
+   xlabel(<span class="string">'x'</span>)
+   ylabel(<span class="string">'f(x)'</span>)
+   axis([0 1 19.9 21.1])
+   title(<span class="string">'SUS sin escalamiento'</span>)
+   hold <span class="string">on</span>
+   plot(p,[19.9 21.1]);
+   str = sprintf(<span class="string">'t = %d'</span>,i);
+   text(0.7,20.8,str)
+   hold <span class="string">off</span>
+   pause(0.1)
+<span class="keyword">end</span>
+</pre><img vspace="5" hspace="5" src="Escalamiento_04.png"> <h2>Un AG con selecci&oacute;n proporcional y escalamiento<a name="5"></a></h2>
+         <p>A continuaci&oacute;n incluimos escalamiento lineal y la poblaci&oacute;n s&iacute; converge al &oacute;ptimo.</p><pre class="codeinput">p = population(<span class="string">'real'</span>,[0 1],30,0.01,0.9);
+p = random(p,100);
+generaciones = 50;
+p = evaluate(p,debf2T);
+<span class="keyword">for</span> i=1:generaciones
+   p = scale(p);      <span class="comment">% Escalamiento lineal</span>
+   p = sus(p);
+   p = crossover(p);
+   p = mutation(p);
+   p = evaluate(p,debf2T);
+   plot(t,debf2T(t))
+   xlabel(<span class="string">'x'</span>)
+   ylabel(<span class="string">'f(x)'</span>)
+   axis([0 1 19.9 21.1])
+   title(<span class="string">'SUS con escalamiento'</span>)
+   hold <span class="string">on</span>
+   plot(p,[19.9 21.1]);
+   str = sprintf(<span class="string">'t = %d'</span>,i);
+   text(0.7,20.8,str)
+   hold <span class="string">off</span>
+   pause(0.1)
+<span class="keyword">end</span>
+</pre><img vspace="5" hspace="5" src="Escalamiento_05.png"> <h2>Un AG con selecci&oacute;n de torneo<a name="6"></a></h2>
+         <p>En lugar de selecci&oacute;n proporcional y escalamiento podemos obtener los mismos resultados con selecci&oacute;n de torneo.</p><pre class="codeinput">p = population(<span class="string">'real'</span>,[0 1],30,0.01,0.9);
+p = random(p,100);
+generaciones = 50;
+p = evaluate(p,debf2T);
+<span class="keyword">for</span> i=1:generaciones
+   p = tournament(p);
+   p = crossover(p);
+   p = mutation(p);
+   p = evaluate(p,debf2T);
+   xlabel(<span class="string">'x'</span>)
+   ylabel(<span class="string">'f(x)'</span>)
+   plot(t,debf2T(t))
+   axis([0 1 19.9 21.1])
+   title(<span class="string">'selecci&oacute;n de torneo'</span>)
+   hold <span class="string">on</span>
+   plot(p,[19.9 21.1]);
+   str = sprintf(<span class="string">'t = %d'</span>,i);
+   text(0.7,20.8,str)
+   hold <span class="string">off</span>
+   pause(0.1)
+<span class="keyword">end</span>
+</pre><img vspace="5" hspace="5" src="Escalamiento_06.png"> <p class="footer"><br>
+            Published with MATLAB&reg; 7.3<br></p>
+      </div>
+      <!--
+##### SOURCE BEGIN #####
+%% Escalamiento
+% En este tutorial se hace una breve demostración de la necesidad
+% de escalamiento.
+
+%% debf2: función 2 de Deb
+% Como función objetivo, vamos a usar la función 2 de Deb. A continuación
+% obtenemos su gráfica.  El óptimo se encuentra en x=0.1.
+t = 0:0.001:1;
+plot(t,debf2(t))
+axis([0 1 -0.1 1.1])
+xlabel('x')
+ylabel('f(x)')
+title('debf2')
+
+%% Un AG Simple sobre debf2
+% Optimizamos la función |debf2| con un algoritmo genético de reales con
+% un segmento de 30 bits, |pm|=0.01 y |pc|=0.9.  Utilizamos un AG simple con
+% selección proporcional (SUS) y lo corremos por 100 generaciones.  La
+% población converge al óptimo.
+p = population('real',[0 1],30,0.01,0.9);
+p = random(p,100);
+generaciones = 100;
+p = evaluate(p,@debf2);
+for i=1:generaciones
+   p = sus(p); 
+   p = crossover(p);
+   p = mutation(p);
+   p = evaluate(p,@debf2);
+   plot(t,debf2(t))
+   xlabel('x')
+   ylabel('f(x)')
+   axis([0 1 -0.1 1.1])
+   title('SUS sin escalamiento')
+   hold on
+   plot(p);
+   str = sprintf('t = %d',i);
+   text(0.7,0.8,str)
+   hold off
+   pause(0.1)
+end
+
+%% debf2T: la función 2 de Deb trasladada
+% Como una segunda función objetivo, trasladamos la función |debf2| por 20 
+% en el eje y. A continuación obtenemos su gráfica. El óptimo se
+% encuentra en x=0.1.
+
+debf2T = @(x) debf2(x) + 20;
+t = 0:0.001:1;
+plot(t,debf2T(t))
+axis([0 1 19.9 21.1])
+xlabel('x')
+ylabel('f(x)')
+title('debf2+20')
+
+%% Un AG Simple sobre debf2T
+% Optimizamos la función |debf2T| con un algoritmo genético de reales con
+% un segmento de 30 bits, |pm|=0.01 y |pc|=0.9.  Utilizamos un AG simple con
+% selección proporcional (SUS) y lo corremos por 100 generaciones.  La
+% población converge al óptimo. Ahora la población no converge al óptimo.
+p = population('real',[0 1],30,0.01,0.9);
+p = random(p,100);
+generaciones = 50;
+p = evaluate(p,debf2T);
+for i=1:generaciones
+   p = sus(p); 
+   p = crossover(p);
+   p = mutation(p);
+   p = evaluate(p,debf2T);
+   plot(t,debf2T(t))
+   xlabel('x')
+   ylabel('f(x)')
+   axis([0 1 19.9 21.1])
+   title('SUS sin escalamiento')
+   hold on
+   plot(p,[19.9 21.1]);
+   str = sprintf('t = %d',i);
+   text(0.7,20.8,str)
+   hold off
+   pause(0.1)
+end
+
+%% Un AG con selección proporcional y escalamiento
+% A continuación incluimos escalamiento lineal y la población sí converge
+% al óptimo.
+p = population('real',[0 1],30,0.01,0.9);
+p = random(p,100);
+generaciones = 50;
+p = evaluate(p,debf2T);
+for i=1:generaciones
+   p = scale(p);      % Escalamiento lineal
+   p = sus(p); 
+   p = crossover(p);
+   p = mutation(p);
+   p = evaluate(p,debf2T);
+   plot(t,debf2T(t))
+   xlabel('x')
+   ylabel('f(x)')
+   axis([0 1 19.9 21.1])
+   title('SUS con escalamiento')
+   hold on
+   plot(p,[19.9 21.1]);
+   str = sprintf('t = %d',i);
+   text(0.7,20.8,str)
+   hold off
+   pause(0.1)
+end
+
+%% Un AG con selección de torneo 
+% En lugar de selección proporcional y escalamiento podemos obtener los
+% mismos resultados con selección de torneo.
+p = population('real',[0 1],30,0.01,0.9);
+p = random(p,100);
+generaciones = 50;
+p = evaluate(p,debf2T);
+for i=1:generaciones
+   p = tournament(p); 
+   p = crossover(p);
+   p = mutation(p);
+   p = evaluate(p,debf2T);
+   xlabel('x')
+   ylabel('f(x)')
+   plot(t,debf2T(t))
+   axis([0 1 19.9 21.1])
+   title('selección de torneo')
+   hold on
+   plot(p,[19.9 21.1]);
+   str = sprintf('t = %d',i);
+   text(0.7,20.8,str)
+   hold off
+   pause(0.1)
+end
+
+##### SOURCE END #####
+-->
+   </body>
+</html>

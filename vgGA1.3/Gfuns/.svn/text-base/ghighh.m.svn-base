@@ -1,0 +1,20 @@
+function res = ghighh(p, n)
+
+% ghighh(p, n)
+  
+%************************************************************
+%*                                                          *
+%*   vgGA: The Virtual Gene Genetic Algorithm               *
+%*                                                          *
+%*   Copyright (c) All Rights Reserved                      *
+%*   Manuel Valenzuela-Rendon                               *
+%*   valenzuela@itesm.mx                                    *
+%*   http://homepages.mty.itesm.mx/valenzuela               *
+%*                                                          *
+%*   Centro de Computacion Inteligente y Robotica           *
+%*   Tecnologico de Monterrey, Campus Monterrey             *
+%*   Monterrey, N.L., Mexico                                *
+%*                                                          *
+%************************************************************
+
+  res = ghigh(p,n)./n;

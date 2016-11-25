@@ -1,0 +1,49 @@
+%
+%************************************************************
+%*                                                          *
+%*   vgGA: The Virtual Gene Genetic Algorithm               *
+%*                                                          *
+%*   Copyright (c) All Rights Reserved                      *
+%*   Manuel Valenzuela-Rendon                               *
+%*   valenzuela@itesm.mx                                    *
+%*   http://homepages.mty.itesm.mx/valenzuela               *
+%*                                                          *
+%*   Centro de Computacion Inteligente y Robotica           *
+%*   Tecnologico de Monterrey, Campus Monterrey             *
+%*   Monterrey, N.L., Mexico                                *
+%*                                                          *
+%************************************************************
+%
+% IFUNS/
+%   This directory contains integer version of functions operating
+%   over traditional integer chromosomes.
+%
+% 
+% IMUTATE
+%    Returns the imutation of r at value k. The number r 
+%    takes a minimal value of rMin.
+% 
+% ICROSSAT
+%    Performs crossover of p1 and p2 at value m. 
+% 
+% IDIGIT
+%    Digit m of base B of integer p. Digits are numbered
+%    from least significant to most significant starting
+%    at 1.
+% 
+% IHIGH
+%    High part of integer p above digit m of base B.
+% 
+% IHIGHH
+%    Digits of the high part of integer p above digit m of base B.
+% 
+% ILOW
+%    Low part of integer p up to digit m of base B.
+% 
+% IMUTVALUES
+%    Returns a vector of all the possible results of the
+%    mutation of digits m1+1 through m2.
+% 
+% ISEGMENT
+%    Segment of bits m1+1 through m2 of integer p
+% 

@@ -1,0 +1,447 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN">
+<html xmlns:mwsh="http://www.mathworks.com/namespace/mcode/v1/syntaxhighlight.dtd">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   
+      <!--
+This HTML is auto-generated from an M-file.
+To make changes, update the M-file and republish this document.
+      -->
+      <title>Compartici&oacute;n (sharing)</title>
+      <meta name="generator" content="MATLAB 7.3">
+      <meta name="date" content="2008-08-08">
+      <meta name="m-file" content="Comparticion"><style>
+
+body {
+  background-color: white;
+  margin:10px;
+}
+
+h1 {
+  color: #990000; 
+  font-size: x-large;
+}
+
+h2 {
+  color: #990000;
+  font-size: medium;
+}
+
+/* Make the text shrink to fit narrow windows, but not stretch too far in 
+wide windows. */ 
+p,h1,h2,div.content div {
+  max-width: 600px;
+  /* Hack for IE6 */
+  width: auto !important; width: 600px;
+}
+
+pre.codeinput {
+  background: #EEEEEE;
+  padding: 10px;
+}
+@media print {
+  pre.codeinput {word-wrap:break-word; width:100%;}
+} 
+
+span.keyword {color: #0000FF}
+span.comment {color: #228B22}
+span.string {color: #A020F0}
+span.untermstring {color: #B20000}
+span.syscmd {color: #B28C00}
+
+pre.codeoutput {
+  color: #666666;
+  padding: 10px;
+}
+
+pre.error {
+  color: red;
+}
+
+p.footer {
+  text-align: right;
+  font-size: xx-small;
+  font-weight: lighter;
+  font-style: italic;
+  color: gray;
+}
+
+  </style></head>
+   <body>
+      <div class="content">
+         <h1>Compartici&oacute;n (sharing)</h1>
+         <introduction>
+            <p>En este tutorial se hace una breve demostraci&oacute;n de compartici&oacute;n.</p>
+         </introduction>
+         <h2>Contents</h2>
+         <div>
+            <ul>
+               <li><a href="#1">Funci&oacute;n de compartici&oacute;n</a></li>
+               <li><a href="#2">debf1: funci&oacute;n 1 de Deb</a></li>
+               <li><a href="#3">Un AG Simple sobre debf1</a></li>
+               <li><a href="#4">Un AG con sharing fenot&iacute;pico sobre debf1</a></li>
+               <li><a href="#5">debf2: funci&oacute;n 2 de Deb</a></li>
+               <li><a href="#6">Un AG Simple sobre debf2</a></li>
+               <li><a href="#7">Un AG con compartici&oacute;n fenot&iacute;pica sobre debf2</a></li>
+               <li><a href="#8">Comparaci&oacute;n lado a lado, con y sin compartici&oacute;n</a></li>
+            </ul>
+         </div>
+         <h2>Funci&oacute;n de compartici&oacute;n<a name="1"></a></h2>
+         <p>&Eacute;sta es una gr&aacute;fica de la funci&oacute;n de compartici&oacute;n para diferentes valores de <tt>alpha</tt>.
+         </p><pre class="codeinput">d = -0.1:0.02:1.2;
+plot(d,Sh(d,1,0.5),d,Sh(d,1,0.7),d,Sh(d,1,1),d,Sh(d,1,1.5),d,Sh(d,1,2));
+axis([-0.1 1.1 -0.1 1.2])
+xlabel(<span class="string">'d'</span>)
+ylabel(<span class="string">'Sh(d)'</span>)
+title(<span class="string">'Funci&oacute;n de compartici&oacute;n'</span>)
+legend(<span class="string">'alfa=0.5'</span>,<span class="string">'alfa=0.7'</span>,<span class="string">'alfa=1'</span>,<span class="string">'alfa=1.5'</span>,<span class="string">'alfa=2'</span>,<span class="string">'Location'</span>,<span class="string">'Best'</span>)
+</pre><img vspace="5" hspace="5" src="Comparticion_01.png"> <h2>debf1: funci&oacute;n 1 de Deb<a name="2"></a></h2>
+         <p>La funci&oacute;n 1 de Deb tiene varios &oacute;ptimos uniformemente espaciados.</p><pre class="codeinput">t = 0:0.001:1;
+plot(t,debf1(t))
+axis([0 1 -0.1 1.1])
+title(<span class="string">'debf1'</span>)
+xlabel(<span class="string">'x'</span>)
+ylabel(<span class="string">'f(x)'</span>)
+</pre><img vspace="5" hspace="5" src="Comparticion_02.png"> <h2>Un AG Simple sobre debf1<a name="3"></a></h2>
+         <p>Optimizamos la funci&oacute;n <tt>debf1</tt> con un algoritmo gen&eacute;tico de reales con un segmento de 30 bits, <tt>pm</tt>=0.0 y <tt>pc</tt>=0.9.  Utilizamos un AG simple con selecci&oacute;n proporcional (SUS) y lo corremos por 200 generaciones.  La poblaci&oacute;n converge
+            a uno de los &oacute;ptimos en forma aleatoria.
+         </p><pre class="codeinput">p = population(<span class="string">'real'</span>,[0 1],30,0,0.9);
+p = random(p,100);
+generaciones = 100;
+p = evaluate(p,@debf1);
+<span class="keyword">for</span> i=1:generaciones
+   p = sus(p);
+   p = crossover(p);
+   p = mutation(p);
+   p = evaluate(p,@debf1);
+   plot(t,debf1(t))
+   axis([0 1 -0.1 1.1])
+   title(<span class="string">'AG simple sobre debf1'</span>)
+   xlabel(<span class="string">'x'</span>)
+   ylabel(<span class="string">'f(x)'</span>)
+   hold <span class="string">on</span>
+   plot(p);
+   str = sprintf(<span class="string">'t = %d'</span>,i);
+   text(0.77,0.85,str)
+   hold <span class="string">off</span>
+   pause(0.03)
+<span class="keyword">end</span>
+</pre><img vspace="5" hspace="5" src="Comparticion_03.png"> <h2>Un AG con sharing fenot&iacute;pico sobre debf1<a name="4"></a></h2>
+         <p>Ahora agregamos sharing fenot&iacute;pico al algoritmo gen&eacute;tico.  Fijamos sigma=1.</p><pre class="codeinput">p = population(<span class="string">'real'</span>,[0 1],30,0,0.9);
+p = random(p,200);
+generaciones = 200;
+p = evaluate(p,@debf1);
+<span class="keyword">for</span> i=1:generaciones
+   p = share(p,0.1,<span class="string">'phenotypic'</span>);
+   p = sus(p);
+   p = crossover(p);
+   p = mutation(p);
+   p = evaluate(p,@debf1);
+   plot(t,debf1(t))
+   axis([0 1 -0.1 1.1])
+   title(<span class="string">'AG con compartici&oacute;n sobre funci&oacute;n debf1'</span>)
+   xlabel(<span class="string">'x'</span>)
+   ylabel(<span class="string">'f(x)'</span>)
+   hold <span class="string">on</span>
+   plot(p);
+   str = sprintf(<span class="string">'t = %d'</span>,i);
+   text(0.77,0.85,str)
+   hold <span class="string">off</span>
+   pause(0.03)
+<span class="keyword">end</span>
+</pre><img vspace="5" hspace="5" src="Comparticion_04.png"> <h2>debf2: funci&oacute;n 2 de Deb<a name="5"></a></h2>
+         <p>La funci&oacute;n 2 de Deb tiene varios m&aacute;ximos uniformemente espaciados</p><pre class="codeinput">t = 0:0.001:1;
+plot(t,debf2(t))
+axis([0 1 -0.1 1.1])
+title(<span class="string">'debf2'</span>)
+xlabel(<span class="string">'x'</span>)
+ylabel(<span class="string">'f(x)'</span>)
+</pre><img vspace="5" hspace="5" src="Comparticion_05.png"> <h2>Un AG Simple sobre debf2<a name="6"></a></h2>
+         <p>Optimizamos la funci&oacute;n <tt>debf2</tt> con un algoritmo gen&eacute;tico de reales con un segmento de 30 bits, <tt>pm</tt>=0.0 y <tt>pc</tt>=0.9.  Utilizamos un AG simple con selecci&oacute;n proporcional (SUS) y lo corremos por 200 generaciones.  La poblaci&oacute;n converge
+            a uno de los &oacute;ptimos en forma aleatoria.
+         </p><pre class="codeinput">p = population(<span class="string">'real'</span>,[0 1],30,0,0.9);
+p = random(p,100);
+generaciones = 200;
+p = evaluate(p,@debf2);
+<span class="keyword">for</span> i=1:generaciones
+   p = sus(p);
+   p = crossover(p);
+   p = mutation(p);
+   p = evaluate(p,@debf2);
+   plot(t,debf2(t))
+   axis([0 1 -0.1 1.1])
+   title(<span class="string">'debf1'</span>)
+   xlabel(<span class="string">'x'</span>)
+   ylabel(<span class="string">'f(x)'</span>)
+   hold <span class="string">on</span>
+   plot(p);
+   str = sprintf(<span class="string">'t = %d'</span>,i);
+   text(0.77,0.85,str)
+   hold <span class="string">off</span>
+   pause(0.03)
+<span class="keyword">end</span>
+</pre><img vspace="5" hspace="5" src="Comparticion_06.png"> <h2>Un AG con compartici&oacute;n fenot&iacute;pica sobre debf2<a name="7"></a></h2>
+         <p>Ahora agregamos sharing fenot&iacute;pico al algoritmo gen&eacute;tico.  Fijamos sigma=1.</p><pre class="codeinput">p = population(<span class="string">'real'</span>,[0 1],30,0,0.9);
+p = random(p,100);
+generaciones = 200;
+p = evaluate(p,@debf2);
+<span class="keyword">for</span> i=1:generaciones
+   p = share(p,0.1,<span class="string">'phenotypic'</span>);
+   p = sus(p);
+   p = crossover(p);
+   p = mutation(p);
+   p = evaluate(p,@debf2);
+   plot(t,debf2(t))
+   axis([0 1 -0.1 1.1])
+   title(<span class="string">'AG con compartici&oacute;n fenot&iacute;pica sobre debf2'</span>)
+   hold <span class="string">on</span>
+   plot(p);
+   str = sprintf(<span class="string">'t = %d'</span>,i);
+   text(0.77,0.85,str)
+   hold <span class="string">off</span>
+   pause(0.03)
+<span class="keyword">end</span>
+</pre><img vspace="5" hspace="5" src="Comparticion_07.png"> <h2>Comparaci&oacute;n lado a lado, con y sin compartici&oacute;n<a name="8"></a></h2>
+         <p>Finalmente, se presenta la comparaci&oacute;n lado a lado.</p><pre class="codeinput">fcn = @debf2;
+n = 30;
+pc = 1;
+pm = 0.0;
+generaciones = 200;
+p1 = population(<span class="string">'real'</span>,[0 1],n,pm,pc);
+p2 = population(<span class="string">'real'</span>,[0 1],n,pm,pc);
+p1 = random(p1,100);
+p2 = random(p2,100);
+p1 = evaluate(p1,fcn);
+p2 = evaluate(p2,fcn);
+<span class="keyword">for</span> i=1:generaciones
+   p1 = sus(p1);
+   p1 = crossover(p1);
+   p1 = mutation(p1);
+   p1 = evaluate(p1,fcn);
+   p2 = share(p2,0.1,<span class="string">'phenotypic'</span>);
+   p2 = sus(p2);
+   p2 = crossover(p2);
+   p2 = mutation(p2);
+   p2 = evaluate(p2,fcn);
+   subplot(2,1,1)
+   plot(t,fcn(t))
+   axis([0 1 -0.1 1.1])
+   title(<span class="string">'Sin compartici&oacute;n'</span>)
+   xlabel(<span class="string">'x'</span>)
+   ylabel(<span class="string">'f(x)'</span>)
+   hold <span class="string">on</span>
+   plot(p1);
+   str = sprintf(<span class="string">'t = %d'</span>,i);
+   text(0.77,0.85,str)
+   hold <span class="string">off</span>
+   subplot(2,1,2)
+   plot(t,fcn(t))
+   axis([0 1 -0.1 1.1])
+   title(<span class="string">'Con compartici&oacute;n: \sigma=0.1, \alpha=1'</span>)
+   xlabel(<span class="string">'x'</span>)
+   ylabel(<span class="string">'f(x)'</span>)
+   hold <span class="string">on</span>
+   plot(p2);
+   str = sprintf(<span class="string">'t = %d'</span>,i);
+   text(0.77,0.85,str)
+   hold <span class="string">off</span>
+   pause(0.03)
+<span class="keyword">end</span>
+</pre><img vspace="5" hspace="5" src="Comparticion_08.png"> <p class="footer"><br>
+            Published with MATLAB&reg; 7.3<br></p>
+      </div>
+      <!--
+##### SOURCE BEGIN #####
+%% Compartición (sharing)
+% En este tutorial se hace una breve demostración de compartición.
+
+%% Función de compartición
+% Ésta es una gráfica de la función de compartición para diferentes valores
+% de |alpha|.
+d = -0.1:0.02:1.2;
+plot(d,Sh(d,1,0.5),d,Sh(d,1,0.7),d,Sh(d,1,1),d,Sh(d,1,1.5),d,Sh(d,1,2));
+axis([-0.1 1.1 -0.1 1.2])
+xlabel('d')
+ylabel('Sh(d)')
+title('Función de compartición')
+legend('alfa=0.5','alfa=0.7','alfa=1','alfa=1.5','alfa=2','Location','Best')
+
+%% debf1: función 1 de Deb
+% La función 1 de Deb tiene varios óptimos uniformemente espaciados.
+t = 0:0.001:1;
+plot(t,debf1(t))
+axis([0 1 -0.1 1.1])
+title('debf1')
+xlabel('x')
+ylabel('f(x)')
+
+
+%% Un AG Simple sobre debf1
+% Optimizamos la función |debf1| con un algoritmo genético de reales con
+% un segmento de 30 bits, |pm|=0.0 y |pc|=0.9.  Utilizamos un AG simple con
+% selección proporcional (SUS) y lo corremos por 200 generaciones.  La
+% población converge a uno de los óptimos en forma aleatoria.
+p = population('real',[0 1],30,0,0.9);
+p = random(p,100);
+generaciones = 100;
+p = evaluate(p,@debf1);
+for i=1:generaciones
+   p = sus(p); 
+   p = crossover(p);
+   p = mutation(p);
+   p = evaluate(p,@debf1);
+   plot(t,debf1(t))
+   axis([0 1 -0.1 1.1])
+   title('AG simple sobre debf1')
+   xlabel('x')
+   ylabel('f(x)')
+   hold on
+   plot(p);
+   str = sprintf('t = %d',i);
+   text(0.77,0.85,str)
+   hold off
+   pause(0.03)
+end
+
+%% Un AG con sharing fenotípico sobre debf1
+% Ahora agregamos sharing fenotípico al algoritmo genético.  Fijamos
+% sigma=1.
+p = population('real',[0 1],30,0,0.9);
+p = random(p,200);
+generaciones = 200;
+p = evaluate(p,@debf1);
+for i=1:generaciones
+   p = share(p,0.1,'phenotypic');
+   p = sus(p); 
+   p = crossover(p);
+   p = mutation(p);
+   p = evaluate(p,@debf1);
+   plot(t,debf1(t))
+   axis([0 1 -0.1 1.1])
+   title('AG con compartición sobre función debf1')
+   xlabel('x')
+   ylabel('f(x)')
+   hold on
+   plot(p);
+   str = sprintf('t = %d',i);
+   text(0.77,0.85,str)
+   hold off
+   pause(0.03)
+end
+
+%% debf2: función 2 de Deb
+% La función 2 de Deb tiene varios máximos uniformemente espaciados
+t = 0:0.001:1;
+plot(t,debf2(t))
+axis([0 1 -0.1 1.1])
+title('debf2')
+xlabel('x')
+ylabel('f(x)')
+
+%% Un AG Simple sobre debf2
+% Optimizamos la función |debf2| con un algoritmo genético de reales con
+% un segmento de 30 bits, |pm|=0.0 y |pc|=0.9.  Utilizamos un AG simple con
+% selección proporcional (SUS) y lo corremos por 200 generaciones.  La
+% población converge a uno de los óptimos en forma aleatoria.
+p = population('real',[0 1],30,0,0.9);
+p = random(p,100);
+generaciones = 200;
+p = evaluate(p,@debf2);
+for i=1:generaciones
+   p = sus(p); 
+   p = crossover(p);
+   p = mutation(p);
+   p = evaluate(p,@debf2);
+   plot(t,debf2(t))
+   axis([0 1 -0.1 1.1])
+   title('debf1')
+   xlabel('x')
+   ylabel('f(x)')
+   hold on
+   plot(p);
+   str = sprintf('t = %d',i);
+   text(0.77,0.85,str)
+   hold off
+   pause(0.03)
+end
+
+
+%% Un AG con compartición fenotípica sobre debf2
+% Ahora agregamos sharing fenotípico al algoritmo genético.  Fijamos
+% sigma=1.
+p = population('real',[0 1],30,0,0.9);
+p = random(p,100);
+generaciones = 200;
+p = evaluate(p,@debf2);
+for i=1:generaciones
+   p = share(p,0.1,'phenotypic');
+   p = sus(p); 
+   p = crossover(p);
+   p = mutation(p);
+   p = evaluate(p,@debf2);
+   plot(t,debf2(t))
+   axis([0 1 -0.1 1.1])
+   title('AG con compartición fenotípica sobre debf2')
+   hold on
+   plot(p);
+   str = sprintf('t = %d',i);
+   text(0.77,0.85,str)
+   hold off
+   pause(0.03)
+end
+
+%% Comparación lado a lado, con y sin compartición
+% Finalmente, se presenta la comparación lado a lado.  
+fcn = @debf2;
+n = 30;
+pc = 1;
+pm = 0.0;
+generaciones = 200;
+p1 = population('real',[0 1],n,pm,pc);
+p2 = population('real',[0 1],n,pm,pc);
+p1 = random(p1,100);
+p2 = random(p2,100);
+p1 = evaluate(p1,fcn);
+p2 = evaluate(p2,fcn);
+for i=1:generaciones
+   p1 = sus(p1); 
+   p1 = crossover(p1);
+   p1 = mutation(p1);
+   p1 = evaluate(p1,fcn);
+   p2 = share(p2,0.1,'phenotypic');
+   p2 = sus(p2); 
+   p2 = crossover(p2);
+   p2 = mutation(p2);
+   p2 = evaluate(p2,fcn);
+   subplot(2,1,1)
+   plot(t,fcn(t))
+   axis([0 1 -0.1 1.1])
+   title('Sin compartición')
+   xlabel('x')
+   ylabel('f(x)')
+   hold on
+   plot(p1);
+   str = sprintf('t = %d',i);
+   text(0.77,0.85,str)
+   hold off
+   subplot(2,1,2)
+   plot(t,fcn(t))
+   axis([0 1 -0.1 1.1])
+   title('Con compartición: \sigma=0.1, \alpha=1')
+   xlabel('x')
+   ylabel('f(x)')
+   hold on
+   plot(p2);
+   str = sprintf('t = %d',i);
+   text(0.77,0.85,str)
+   hold off
+   pause(0.03)
+end
+
+
+##### SOURCE END #####
+-->
+   </body>
+</html>
