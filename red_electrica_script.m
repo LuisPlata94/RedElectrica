@@ -24,8 +24,8 @@
 
 % hijo del nodo i-1
 %       0 1 2 3 4 5 6
-%hijo = [0 5 4 6 1 5 6];
-hijo = [0 1 2 2 2 2 3];
+hijo = [0 5 4 6 1 5 6];
+%hijo = [0 1 2 7 2 2 4];
 
 % Producción del nodo i-1
 %       0 1 2 3 4 5 6

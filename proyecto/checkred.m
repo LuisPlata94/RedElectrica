@@ -1,20 +1,20 @@
 function r = checkred(x)
 % Funcion para checar si una red es valida
-n=length(x)-1;
+global N
 if any(x==1)
     list=1;
-    for t=1:n
+    for t=1:N-1
         a=find(x==list(t));
         list=[list,a];
         if length(list)==t
-            r=0;
+            r=N-t;
             break
         end
-        if length(list)==n+1
-            r=1;
+        if length(list)==N
+            r=0;
             break
         end
     end
 else
-    r=0;
+    r=N-1;
 end
