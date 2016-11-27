@@ -6,6 +6,8 @@ global N D prod caso
 switch caso
     case 1
         costoUnitario = @(capacidad)  2 + capacidad.^0.6;
+    otherwise
+        costoUnitario= @(capacidad) cu2(capacidad);
 end
 % +1 Por el 0 que se genera
 % Arreglar el exceso de bits con transhijo
@@ -49,6 +51,6 @@ if r==0 % Se cumple que esta bien conectada
 %     end
 else
     % Otra funcion de castigo
-    costo = 200*r;
+    costo = 800;
     %costo = r*costoUnitario(mean(prod)) + mean(prod)*(r^2);
 end

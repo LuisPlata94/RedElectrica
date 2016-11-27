@@ -1,4 +1,4 @@
-clear; clc;
+clear; clc; clf;
 
 global N D prod caso nbits
 
@@ -60,7 +60,8 @@ for i=1:generaciones
 end
 
 %% Gráfica de la red con producción
-hijo=[0,best.r+1];
+clf;
+hijo = [0,transhijo(best.r+1)];
 delta = 0.1; % deplazamiento de las etiquetas
 plot(C(1,1),C(1,2),'sr',C(2:end,1),C(2:end,2),'ob')
 xlim([min(C(:,1))-0.5 max(C(:,1)+0.5)]);

@@ -2,7 +2,7 @@ clear; clc; clf;
 
 global N D prod caso nbits
 
-caso=1; % Cambiar este numero de acuerdo al caso a analizar
+caso=2; % Cambiar este numero de acuerdo al caso a analizar
 switch caso
     % Producción del nodo i-1
     % Coordenadas del nodo i-1
