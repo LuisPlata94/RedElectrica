@@ -25,7 +25,7 @@ end
 % Verificar si la red es valida
 r=checkred(hijo);
 
-if r==0 % Se cumple que esta bien conectada    
+if r==0 % Se cumple que esta bien conectada
     % Calculo de corriente en cada arista del arbol
     Aux = A;
     envia = zeros(1,N);    % potencia que envía cada nodo a su padre
@@ -41,16 +41,16 @@ if r==0 % Se cumple que esta bien conectada
         end
         Aux(1,hojas) = 1;
     end
-    
     % Costo por arista
     costo = sum(costoUnitario(envia).*[0;diag(D(2:N,hijo(2:N)))]');
-%     if r>0
-%         % Funcion de castigo
-%         costo=costo + 500;
-%         %costo=costo+mean(prod)*(r^2);
-%     end
 else
-    % Otra funcion de castigo
-    costo = 800;
-    %costo = r*costoUnitario(mean(prod)) + mean(prod)*(r^2);
+    % Costo arbitrario
+    switch caso
+        case 1
+            costo = 250;
+        case 2
+            costo = 750;
+        case 3
+            costo = 800;
+    end
 end

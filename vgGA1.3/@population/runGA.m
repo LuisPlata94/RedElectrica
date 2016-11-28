@@ -1,4 +1,4 @@
-function [pop,B] = runGA(pop,objective_function,generations,varargin)
+function [pop,B,bestv] = runGA(pop,objective_function,generations,varargin)
 % population/runGA
 %
 % [pop, B] = runGA(pop, objective_function, generations)
@@ -53,7 +53,7 @@ end
 if pop.evals == 0
    pop = evaluate(pop, objective_function);
 end
-report(pop);
+%report(pop);
 if fileFlag
    report(pop, fileID);
 end
@@ -83,7 +83,7 @@ for gen=1:generations
    if PLOT
      plot(pop)
    end
-   report(pop);
+   %report(pop);
    if fileFlag
       report(pop, fileID);
    end
@@ -93,4 +93,6 @@ end
 if fileFlag
    fclose(fileID);
 end
-%
+best=get(pop,'best');
+bestv=best.fitness;
+disp(bestv);
