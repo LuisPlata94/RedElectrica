@@ -58,7 +58,7 @@ hijo = [0,transhijo(best.r+1)];
 %% Gráfica de la red con producción
 clf;
 
-% Conversión de padre a matriz de incidencias
+% Conversión de padre a matriz de incidenciass
 A = zeros(N);
 for i=1:N
    if hijo(i)~=0
